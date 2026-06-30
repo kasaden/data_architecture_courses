@@ -1,5 +1,7 @@
 .env
 data/
+Data/
+*.txt
 __pycache__/
 *.pyc
 *.pyo
