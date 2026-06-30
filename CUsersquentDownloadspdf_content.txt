@@ -1,0 +1,203 @@
+Nombre de pages: 23
+
+=== PAGE 1 ===
+Data Architecture for AI
+Concevoir et déployer une architecture de données
+containerisée pour un projet IA
+MSc 2025-2026
+
+=== PAGE 2 ===
+Ce que vous savez déjà
+Cours précédent (Data Pipelines for AI) :
+• ETL / ELT — pipeline Python de bout en bout
+• Docker — Image · Conteneur · Dockerfile — docker compose up/down/logs
+• Scraping & CSV — requests, BeautifulSoup, pandas
+• Gestion des erreurs — try/except, logging, time.time()
+Ce cours va plus loin : stocker les données dans de vraies bases, orchestrer
+plusieurs services, monitorer l'infrastructure.
+
+=== PAGE 3 ===
+Modélisation & premiers
+conteneurs
+Session 1/3
+
+=== PAGE 4 ===
+Objectifs globaux du module
+À la fin du module, vous serez capables de :
+• Distinguer données structurées et semi-structurées
+• Modéliser un schéma SQL (PK, FK, types)
+• Justifier le choix NoSQL pour les consultations
+• Déployer PostgreSQL et MongoDB dans Docker
+
+=== PAGE 5 ===
+Le cas fictif
+Contexte :
+Un laboratoire de santé veut centraliser ses données médicales.
+Données à gérer :
+Médecins, patients, médicaments, prescriptions → structurées
+Consultations (symptômes, diagnostics) → semi-structurées
+Besoins :
+• Stockage fiable et scalable
+• Interfaces d'administration
+• Pipeline d'ingestion automatisé
+• Monitoring des services
+
+=== PAGE 6 ===
+Stack technique
+• PostgreSQL (SQL)
+• MongoDB (NoSQL)
+• pgAdmin
+• Mongo Express
+• Portainer
+• docker-compose
+• Scripts Python d’insertion
+
+=== PAGE 7 ===
+Architecture cible
+
+=== PAGE 8 ===
+SQL vs NoSQL : quand choisir ?
+SQL (PostgreSQL):
+• Schéma fixe et bien défini
+• Relations entre entités (clés étrangères)
+• Requêtes complexes (JOIN, agrégations)
+• Contraintes d'intégrité garanties
+NoSQL (MongoDB):
+• Schéma flexible (documents JSON)
+• Structure variable selon les enregistrements
+• Pas de jointures complexes nécessaires
+• Évolution facile du modèle
+
+=== PAGE 9 ===
+Modélisation SQL
+Questions à se poser avant d'écrire le SQL :
+• Quelles sont les entités ?
+• Quels champs sont obligatoires ?
+• Quelles sont les relations (1-N, N-N) ?
+https://dbdiagram.io
+
+=== PAGE 10 ===
+Modélisation NoSQL
+Collection unique pour les consultations :
+Pourquoi NoSQL ici ?
+• symptoms et diagnosis ont une longueur et une structure variables
+• Pas de jointures nécessaires sur ce document
+• patient_id assure le lien logique avec PostgreSQL (jointure applicative)
+
+=== PAGE 11 ===
+Docker : Volumes & Réseaux
+Deux concepts nouveaux pour ce projet :
+Volumes:
+• Persistent les données même si le conteneur est supprimé
+• Sans volume, toutes les données PostgreSQL sont perdues au docker compose down
+• Déclaré sous volumes: dans le docker-compose
+Réseaux:
+• Réseau isolé pour que les conteneurs communiquent entre eux
+• Un service se connecte à un autre via son nom de service (ex: postgres, pas localhost)
+• Déclaré sous networks: dans le docker-compose
+
+=== PAGE 12 ===
+Travaux pratiques
+TP :
+• Analyser le cas fictif
+• Créer le diagramme SQL sur dbdiagram.io
+• Déployer PostgreSQL et MongoDB avec docker compose up
+• Vérifier que les bases de données sont up et accessibles
+Livrables intermediaires:
+• Cahier des charges simples (contexte, besoins fonctionnels, besoins techniques)
+• schema SQL (export dbdiagram.io)
+• schema NoSQL (schéma du document JSON)
+• Diagramme des services et leurs interactions
+
+=== PAGE 13 ===
+Docker Compose & pipeline
+d'ingestion
+Session 2/3
+
+=== PAGE 14 ===
+Objectifs de la séance
+À la fin de cette séance, vous serez capables de :
+• Écrire un docker-compose.yml complet avec tous les services
+• Gérer les secrets avec un fichier .env
+• Comprendre healthcheck et depends_on
+• Créer un Dockerfile pour un service Python
+• Connecter Python à PostgreSQL (psycopg2) et MongoDB (pymongo)
+• Mesurer le comportement du pipeline à différentes volumétries
+
+=== PAGE 15 ===
+Structure d'un docker-compose.yml
+Clé Rôle
+services: Déclare chaque conteneur
+image: Image Docker à utiliser (ex: postgres:15)
+environment: Variables passées au conteneur (via .env)
+volumes: Monte un volume pour persister les données
+networks: Relie les services dans un réseau isolé
+depends_on: Ordre de démarrage (avec condition: service_healthy)
+healthcheck: Vérifie que le service est vraiment prêt
+ports: Expose un port sur l'hôte (hôte:conteneur)
+
+=== PAGE 16 ===
+Variables d'environnement
+Règle : jamais de mot de passe en dur dans le code ou le docker-compose.yml.
+Fichier .env (à la racine, jamais commité):
+Dans docker-compose.yml, on référence avec ${VAR}:
+Toujours fournir un .env.example avec des valeurs fictives pour la doc.
+
+=== PAGE 17 ===
+Healthcheck & depends_on
+Problème :
+Un conteneur "démarré" n'est pas forcément "prêt"
+à recevoir des connexions.
+Sans healthcheck, l'ingestor peut tenter de se connecter
+avant que la base soit prête: risque d'erreur au démarrage.
+
+=== PAGE 18 ===
+Connexion Python aux bases de données
+PostgreSQL — psycopg2:
+MongoDB — pymongo :
+
+=== PAGE 19 ===
+Execution et test de volumétrie
+Relancer l'ingestor avec différents volumes et observer :
+Questions à se poser :
+• Combien de temps pour 1 000 lignes ? 10 000 ? 100 000 ?
+• La mémoire augmente-t-elle ?
+• Le pipeline est-il idempotent (re-exécutable sans doublon) ?
+• Que se passe-t-il si on l'arrête en cours d'exécution ?
+
+=== PAGE 20 ===
+Travaux pratiques
+TP :
+• Écrire le docker-compose.yml complet (tous les services)
+• Créer le Dockerfile du service Python
+• Écrire les scripts d'ingestion PostgreSQL et MongoDB
+• Tester avec 60 000, 600 000 et 6 000 000 lignes
+Livrables intermediaires:
+• docker-compose.yml commenté
+• app/ (Dockerfile + scripts Python + requirements.txt)
+• .env.example
+• .gitignore (le .env réel ne doit jamais apparaître sur GitHub)
+
+=== PAGE 21 ===
+Monitoring, qualité et
+soutenance
+Session 3/3
+
+=== PAGE 22 ===
+Monitoring infra : Portainer & docker stats
+docker stats — métriques en temps réel (CPU, RAM, réseau, I/O)
+Portainer (http://localhost:9000)
+• Dashboard : statut de chaque conteneur
+• Logs en temps réel par service
+• Redémarrage d'un service sans ligne de commande
+• Gestion des volumes et réseaux
+À capturer pour le livrable : screenshot du dashboard Portainer + sortie docker stats pendant une ingestion.
+
+=== PAGE 23 ===
+Livrable Final
+• Cahier des charges
+• Schémas SQL + NoSQL
+• Diagramme d'architecture
+• Extraits commentés du docker-compose.yml
+• Captures pgAdmin, Mongo Express, Portainer
+• Documentation d'utilisation

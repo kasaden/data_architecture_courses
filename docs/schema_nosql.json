@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Consultation",
+  "description": "Document MongoDB représentant une consultation médicale. patient_id et medecin_id font le lien applicatif avec PostgreSQL.",
+  "type": "object",
+  "required": ["patient_id", "medecin_id", "date", "symptoms", "diagnosis"],
+  "properties": {
+    "_id": {
+      "description": "Identifiant MongoDB généré automatiquement (ObjectId)",
+      "type": "string"
+    },
+    "patient_id": {
+      "description": "Référence à patients.id dans PostgreSQL",
+      "type": "integer",
+      "minimum": 1
+    },
+    "medecin_id": {
+      "description": "Référence à medecins.id dans PostgreSQL",
+      "type": "integer",
+      "minimum": 1
+    },
+    "date": {
+      "description": "Date et heure de la consultation (ISO 8601)",
+      "type": "string",
+      "format": "date-time"
+    },
+    "symptoms": {
+      "description": "Liste variable de symptômes déclarés par le patient",
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "diagnosis": {
+      "description": "Diagnostic posé par le médecin",
+      "type": "string"
+    },
+    "notes": {
+      "description": "Observations libres du médecin (champ optionnel)",
+      "type": "string"
+    }
+  },
+  "example": {
+    "_id": "664f1a2b3c4d5e6f7a8b9c0d",
+    "patient_id": 42,
+    "medecin_id": 7,
+    "date": "2024-03-15T10:30:00",
+    "symptoms": ["fièvre", "toux", "fatigue"],
+    "diagnosis": "Grippe saisonnière",
+    "notes": "Repos recommandé pendant 5 jours. Réévaluation si fièvre > 39°C après 48h."
+  }
+}
